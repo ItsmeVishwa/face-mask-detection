@@ -3,72 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Face Mask Detection</title>
-    <!-- Google Fonts -->
+    <title>AI Face Mask Detector — Real-Time Detection</title>
+    <meta name="description" content="Real-time AI-powered face mask detection. Upload an image or use your webcam to detect mask compliance instantly.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <div class="background-orbs">
+
+    <!-- Animated Background -->
+    <div class="bg-scene">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
         <div class="orb orb-3"></div>
+        <div class="grid-overlay"></div>
     </div>
 
-    <div class="container glass-panel">
-        <header>
-            <h1>AI Face Mask <span class="highlight">Detector</span></h1>
-            <p>Upload a photo or capture an image to check mask compliance instantly.</p>
+    <!-- Main App -->
+    <div class="app-wrapper">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-badge">🤖 AI Powered</div>
+            <h1>Face Mask <span class="gradient-text">Detector</span></h1>
+            <p class="subtitle">Real-time mask compliance detection using MobileNetV2 deep learning</p>
         </header>
 
-        <div class="main-content">
-            <div class="upload-section">
-                <!-- Video display for webcam -->
-                <div class="video-container" id="videoContainer" style="display: none;">
-                    <video id="webcam" autoplay playsinline></video>
-                    <canvas id="overlayCanvas"></canvas>
-                </div>
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="totalScans">0</span>
+                <span class="stat-label">Total Scans</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value green" id="maskedCount">0</span>
+                <span class="stat-label">With Mask</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value red" id="noMaskCount">0</span>
+                <span class="stat-label">No Mask</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value accent" id="complianceRate">—</span>
+                <span class="stat-label">Compliance Rate</span>
+            </div>
+        </div>
 
-                <!-- Initial Image Upload/Display -->
-                <div class="image-container" id="imageContainer">
-                    <img id="uploadedImage" src="" alt="Provide an image" style="display: none;">
-                    <canvas id="imageCanvas"></canvas>
-                    <div class="placeholder-text" id="placeholderText">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <p>No Image Selected</p>
+        <!-- Main Grid -->
+        <div class="main-grid">
+
+            <!-- Left: Upload / Camera Panel -->
+            <div class="panel upload-panel">
+                <div class="panel-header">
+                    <h2>📸 Input</h2>
+                    <div class="mode-tabs">
+                        <button class="mode-tab active" id="tabImage" onclick="switchMode('image')">Image</button>
+                        <button class="mode-tab" id="tabWebcam" onclick="switchMode('webcam')">Webcam</button>
                     </div>
                 </div>
 
-                <div class="controls">
-                    <div class="file-upload-wrapper">
+                <!-- Image Mode -->
+                <div id="imageModeView">
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-inner" id="dropZoneInner">
+                            <div class="upload-icon">📂</div>
+                            <p class="drop-title">Drop image here</p>
+                            <p class="drop-sub">or click to browse files</p>
+                            <span class="drop-badge">JPG, PNG, WEBP</span>
+                        </div>
+                        <img id="uploadedImage" src="" alt="" style="display:none;">
+                        <canvas id="imageCanvas"></canvas>
                         <input type="file" id="fileInput" accept="image/*">
-                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-                            Upload Image
+                    </div>
+                </div>
+
+                <!-- Webcam Mode -->
+                <div id="webcamModeView" style="display:none;">
+                    <div class="video-wrapper" id="videoWrapper">
+                        <div class="webcam-placeholder" id="webcamPlaceholder">
+                            <div class="webcam-icon">📹</div>
+                            <p>Camera not started</p>
+                        </div>
+                        <video id="webcam" autoplay playsinline style="display:none;"></video>
+                        <canvas id="overlayCanvas"></canvas>
+                        <div class="autoscan-badge" id="autoscanBadge" style="display:none;">
+                            <span class="pulse-dot"></span> Auto-Scanning
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="controls-bar">
+                    <!-- Image controls -->
+                    <div id="imageControls" class="controls-group">
+                        <button class="btn btn-ghost" id="clearImageBtn" onclick="clearImage()" style="display:none;">✕ Clear</button>
+                        <button class="btn btn-primary" id="scanImageBtn" onclick="scanImage()" disabled>
+                            <span class="btn-icon">🔍</span> Scan Image
                         </button>
                     </div>
-                    <button class="btn btn-secondary" id="webcamBtn">Start Webcam</button>
-                    <button class="btn btn-action" id="captureBtn" style="display:none;">Scan Face</button>
+                    <!-- Webcam controls -->
+                    <div id="webcamControls" class="controls-group" style="display:none;">
+                        <button class="btn btn-ghost" id="webcamToggleBtn" onclick="toggleWebcam()">
+                            <span class="btn-icon">📹</span> Start Camera
+                        </button>
+                        <button class="btn btn-secondary" id="autoScanBtn" onclick="toggleAutoScan()" style="display:none;">
+                            <span class="btn-icon">🔄</span> Auto Scan
+                        </button>
+                        <button class="btn btn-primary" id="captureScanBtn" onclick="captureAndScan()" style="display:none;">
+                            <span class="btn-icon">🎯</span> Capture & Scan
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="status-section">
-                <h2>Analysis Results</h2>
-                <div id="resultsList" class="results-list">
-                    <div class="empty-state">Scan an image to see detection results here.</div>
+            <!-- Right: Results Panel -->
+            <div class="panel results-panel">
+                <div class="panel-header">
+                    <h2>📊 Results</h2>
+                    <button class="btn btn-ghost btn-sm" id="downloadBtn" onclick="downloadResult()" style="display:none;">
+                        ⬇ Download
+                    </button>
                 </div>
-                
+
+                <!-- Loading State -->
                 <div class="loading-state" id="loadingState">
-                    <div class="spinner"></div>
-                    <p>Processing Image...</p>
+                    <div class="scanner-animation">
+                        <div class="scan-line"></div>
+                        <div class="scan-corner tl"></div>
+                        <div class="scan-corner tr"></div>
+                        <div class="scan-corner bl"></div>
+                        <div class="scan-corner br"></div>
+                    </div>
+                    <p class="loading-text">Analyzing faces...</p>
+                </div>
+
+                <!-- Results List -->
+                <div id="resultsList" class="results-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎭</div>
+                        <p>Scan an image to see results</p>
+                        <span>Faces and mask status will appear here</span>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Scan History -->
+        <div class="history-section" id="historySection" style="display:none;">
+            <h3>🕘 Recent Scans</h3>
+            <div class="history-grid" id="historyGrid"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Built with <span class="gradient-text">MobileNetV2</span> + FastAPI + OpenCV &nbsp;|&nbsp;
+                <a href="https://github.com/ItsmeVishwa/face-mask-detection" target="_blank" rel="noopener">View on GitHub ↗</a>
+            </p>
+        </footer>
+
     </div>
 
     <script src="static/script.js"></script>

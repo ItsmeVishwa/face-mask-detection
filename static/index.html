@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Mask Detection</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="container glass-panel">
+        <header>
+            <h1>AI Face Mask <span class="highlight">Detector</span></h1>
+            <p>Upload a photo or capture an image to check mask compliance instantly.</p>
+        </header>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <!-- Video display for webcam -->
+                <div class="video-container" id="videoContainer" style="display: none;">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="overlayCanvas"></canvas>
+                </div>
+
+                <!-- Initial Image Upload/Display -->
+                <div class="image-container" id="imageContainer">
+                    <img id="uploadedImage" src="" alt="Provide an image" style="display: none;">
+                    <canvas id="imageCanvas"></canvas>
+                    <div class="placeholder-text" id="placeholderText">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>No Image Selected</p>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="fileInput" accept="image/*">
+                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            Upload Image
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" id="webcamBtn">Start Webcam</button>
+                    <button class="btn btn-action" id="captureBtn" style="display:none;">Scan Face</button>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <h2>Analysis Results</h2>
+                <div id="resultsList" class="results-list">
+                    <div class="empty-state">Scan an image to see detection results here.</div>
+                </div>
+                
+                <div class="loading-state" id="loadingState">
+                    <div class="spinner"></div>
+                    <p>Processing Image...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+</html>

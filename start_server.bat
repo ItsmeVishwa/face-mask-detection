@@ -1,0 +1,5 @@
+@echo off
+echo Starting Face Mask Detection API...
+cd /d "%~dp0"
+uvicorn app:app --host 127.0.0.1 --port 8000
+pause
